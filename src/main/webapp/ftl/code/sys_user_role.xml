@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sys_user_role">
+
+    <!-- 用户角色 -->
+
+    <sql id="sql_column">
+        <if test="kid != null and kid != ''">kid,</if>
+        <if test="role_id != null and role_id != ''">role_id,</if>
+        <if test="user_id != null and user_id != ''">user_id</if>
+    </sql>
+
+    <!-- 添加数据 -->
+    <update id="add" parameterType="HashMap">
+        INSERT INTO SYS_USER_ROLE (
+        <trim suffixOverrides=",">
+            <if test="kid != null and kid != ''">kid,</if>
+            <if test="role_id != null and role_id != ''">role_id,</if>
+            <if test="user_id != null and user_id != ''">user_id</if>
+        </trim>
+        ) VALUES (
+        <trim suffixOverrides=",">
+			<if test="kid != null and kid != ''">#{kid},</if>
+			<if test="role_id != null and role_id != ''">#{role_id},</if>
+			<if test="user_id != null and user_id != ''">#{user_id}</if>
+        </trim>
+        )
+    </update>
+	
+    <!-- 基于主键KID的存在就更新,否则新增操作 -->
+    <update id="updateOrEdit" parameterType="HashMap">
+        INSERT IGNORE INTO SYS_USER_ROLE (
+        <trim suffixOverrides=",">
+            <if test="kid != null and kid != ''">kid,</if>
+            <if test="role_id != null and role_id != ''">role_id,</if>
+            <if test="user_id != null and user_id != ''">user_id</if>
+        </trim>
+        ) VALUES (
+        <trim suffixOverrides=",">
+            <if test="kid != null and kid != ''">#{kid},</if>
+            <if test="role_id != null and role_id != ''">#{role_id},</if>
+            <if test="user_id != null and user_id != ''">#{user_id}</if>
+        </trim>
+        )
+        ON DUPLICATE KEY UPDATE
+        <trim suffixOverrides=",">
+            <if test="role_id != null and role_id != ''">role_id = #{role_id},</if>
+            <if test="user_id != null and user_id != ''">user_id = #{user_id}</if>
+        </trim>
+    </update>
+
+    <!-- 基于主键KID的批量插入还是批量更新操作 VALUES (字段) VALUES内是数据库的字段，而不是实体的字段或map的key -->
+    <update id="updateEditBatch" parameterType="ArrayList">
+        INSERT IGNORE INTO SYS_USER_ROLE (
+        <foreach collection="list" item="item" index="index">
+            <trim suffixOverrides=",">
+                <if test="index==0">
+                    <if test="item.kid != null and item.kid != ''">kid,</if>
+                    <if test="item.role_id != null and item.role_id != ''">role_id,</if>
+                    <if test="item.user_id != null and item.user_id != ''">user_id,</if>
+                </if>
+            </trim>
+        </foreach>
+        ) VALUES
+        <foreach collection="list" item="item" index="index" separator="," >
+            (
+            <trim suffixOverrides=",">
+                <if test="item.kid != null and item.kid != ''">#{item.kid},</if>
+                <if test="item.role_id != null and item.role_id != ''">#{item.role_id},</if>
+                <if test="item.user_id != null and item.user_id != ''">#{item.user_id}</if>
+            </trim>
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        <foreach collection="list" item="item" index="index">
+            <trim suffixOverrides=",">
+                <if test="index==0">
+                <if test="item.kid != null and item.kid != ''">kid = values(kid),</if>
+                <if test="item.role_id != null and item.role_id != ''">role_id = values(role_id),</if>
+                <if test="item.user_id != null and item.user_id != ''">user_id = values(user_id),</if>
+                </if>
+            </trim>
+        </foreach>
+    </update>
+
+    <!-- 批量添加|插入-->
+    <update id="batchAdd" parameterType="ArrayList">
+        INSERT INTO SYS_USER_ROLE (
+            <foreach collection="list" item="item" index="index">
+                <trim suffixOverrides=",">
+                    <if test="index==0">
+                        <if test="item.kid != null and item.kid != ''">kid,</if>
+                        <if test="item.role_id != null and item.role_id != ''">role_id,</if>
+                        <if test="item.user_id != null and item.user_id != ''">user_id,</if>
+                    </if>
+                </trim>
+            </foreach>
+        ) VALUES
+        <foreach collection="list" item="item" index="index" separator="," >
+            (
+            <trim suffixOverrides=",">
+                <if test="item.kid != null and item.kid != ''">#{item.kid},</if>
+                <if test="item.role_id != null and item.role_id != ''">#{item.role_id},</if>
+                <if test="item.user_id != null and item.user_id != ''">#{item.user_id}</if>
+            </trim>
+            )
+        </foreach>
+    </update>
+
+	<!-- 编辑数据 -->
+	<update id="edit" parameterType="HashMap">
+		UPDATE SYS_USER_ROLE
+		<trim prefix="SET" suffixOverrides=",">
+            <if test="role_id != null and role_id != ''">role_id = #{role_id},</if>
+            <if test="user_id != null and user_id != ''">user_id = #{user_id}</if>
+		</trim>
+		WHERE KID = #{KID} LIMIT 1
+	</update>
+	
+	<!-- 行删除 -->
+	<delete id="delById" parameterType="String">
+		DELETE FROM SYS_USER_ROLE WHERE KID = #{KID}
+	</delete>
+	
+	<!-- 删除|批量删除-->
+	<delete id="delIds">
+		DELETE FROM SYS_USER_ROLE WHERE 
+			KID IN
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+                 #{item}
+		</foreach>
+	</delete>
+	
+	<!-- listData条件查询 -->
+	<sql id="sql_where_listData">
+		<trim prefix="WHERE" prefixOverrides="AND">
+            <if test="role_id != null and role_id != ''">
+                AND role_id LIKE CONCAT('%',#{role_id},'%')
+            </if>
+            <if test="user_id != null and user_id != ''">
+                AND user_id LIKE CONCAT('%',#{user_id},'%')
+            </if>
+		</trim>
+	</sql>
+	
+	<!-- 列表数据 -->
+	<select id="listData" parameterType="HashMap" resultType="HashMap">
+		SELECT
+			kid,
+			role_id,
+			user_id
+		FROM SYS_USER_ROLE
+		<include refid="sql_where_listData"/>
+		<choose>
+    	<when test="order != null and sort != null">
+    		ORDER BY ${sort} ${order}
+    	</when>
+    	<otherwise>
+        </otherwise>
+        </choose>
+        <if test="section != null and pageSize != null ">
+        	LIMIT #{section},#{pageSize}
+		</if>
+	</select>
+	
+	<!-- 总条数总记录数 -->
+	<select id="listTotal" parameterType="HashMap" resultType="Integer">
+		SELECT COUNT(KID) TOTAL FROM SYS_USER_ROLE
+		<include refid="sql_where_listData"/>
+	</select>
+	
+	<!-- 根据id获取全字段数据 -->
+	<select id="queryById" parameterType="String" resultType="HashMap">
+		SELECT 
+            role_id,
+            user_id
+		FROM SYS_USER_ROLE WHERE KID = #{KID} LIMIT 1
+	</select>
+
+</mapper>
